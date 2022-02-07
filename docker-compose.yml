@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  db:
+    image: mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: sparkle
+      MARIADB_DATABASE: sparkle
+      MARIADB_USER: sparkle
+      MARIADB_PASSWORD: sparkle
+  web:
+    build: ""
+    environment:
+      SPARKLE_DJANGO_SECRET: "mysupersecretsecret"
+      SPARKLE_DJANGO_DEBUG: "True"
+      SPARKLE_DJANGO_ALLOWED_HOSTS: "*"
+      SPARKLE_DB_DEFAULT: "mysql://root:sparkle@db/sparkle"
+      SPARKLE_OAUTH_SETTINGS_ID: "YOUR_ID"
+      SPARKLE_OAUTH_SETTINGS_SECRET: "YOUR_SECRET"
+      SPARKLE_LOG_LEVEL: "INFO"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    links:
+      - db
+    depends_on:
+      - db
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    links:
+      - db
+    depends_on:
+      - db
+    profiles:
+      - debug
