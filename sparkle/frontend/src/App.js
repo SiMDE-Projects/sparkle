@@ -1,7 +1,7 @@
 import React from 'react';
-import {Container, Header,} from 'semantic-ui-react';
+import { Container, Header } from 'semantic-ui-react';
 
-const App = function () {
+function App() {
   return (
     <Container>
       <Header as="h2" textAlign="center">
@@ -9,6 +9,6 @@ const App = function () {
       </Header>
     </Container>
   );
-};
+}
 
 export default App;

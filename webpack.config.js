@@ -1,6 +1,6 @@
-const path = require('path')
-const BundleTracker = require('webpack-bundle-tracker')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const path = require('path');
+const BundleTracker = require('webpack-bundle-tracker');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -24,8 +24,8 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-            loader: "babel-loader",
-            options: {presets: ["@babel/env", "@babel/preset-react"]}
+          loader: 'babel-loader',
+          options: { presets: ['@babel/env', '@babel/preset-react'] },
         },
       },
       {
@@ -44,7 +44,7 @@ module.exports = {
   },
   devServer: {
     devMiddleware: {
-        writeToDisk: true,
+      writeToDisk: true,
     },
   },
-}
+};
