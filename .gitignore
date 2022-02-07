@@ -1,1 +1,10 @@
 .idea
+venv
+docker-compose.override.yml
+.env
+.pytest_cache
+/webpack-stats.json
+/sparkle/frontend/dist
+/node_modules/
+/sparkle/frontend/webpack-stats.json
+__pycache__/
