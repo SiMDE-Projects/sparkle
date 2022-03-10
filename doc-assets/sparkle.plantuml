@@ -1,0 +1,28 @@
+@startuml sparkle
+skinparam groupInheritance 2
+
+note " 'n' ∈ ℕ*\n '*' ∈ ℕ" as N1
+note "héritages exclusifs" as N3
+
+Article "1" - "*" Billet
+
+Asso "1" - "*" Article : vend >
+Asso "1" - "*" Événement : organise >
+
+note "'vend' un Article donnant accès à une Zone d'un\nÉvénement implique 'organise' cet événement" as N2
+Asso .. N2
+Zone .. N2
+
+Asso "*" - "*" Événement : partenaire >
+Événement "1" *-- "n" Zone
+Article "*" - "*" Zone : donne accès >
+
+PersonnePortail --|> Personne
+
+Billet - Personne : bénéficie de <
+
+
+PersonnePortail "1" - "*" Achat : paye >
+Achat "1" - "n" Billet : finance >
+
+@enduml
