@@ -21,10 +21,15 @@ Pers_portail -|> Personne
 Billet "*" -- "1" Personne : bénéficie de <
 
 
-Pers_portail "1" -- "*" ContratVente : accepte conditions >
+Pers_portail "1" -- "*" ContratVente
 ContratVente "1" -- "n" Billet : cédé sous <
-ContratVente "1" -- "0..1" EngagementFinancier
+note "Le contrat de vente consiste en l'acceptation\ndes conditions de vente de chaque article,\nainsi que d'un engagement financier\nsi l'un des articles a un prix non nul" as N4
+N4 .. ContratVente
+N4 .. Article::prix
 
+
+Article : prix
+Article : conditionsVente
 
 package "Droit d'accès aux articles" #DDDDDD {
 
