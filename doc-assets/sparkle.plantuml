@@ -4,25 +4,40 @@ skinparam groupInheritance 2
 note " 'n' ∈ ℕ*\n '*' ∈ ℕ" as N1
 note "héritages exclusifs" as N3
 
-Article "1" - "*" Billet : donne droit à <
+Article "1" -- "*" Billet : donne droit à <
 
-Asso "1" - "*" Article : vend >
-Asso "1" - "*" Événement : organise >
+Asso "1" -- "*" Article : vend >
+Asso "1" -- "*" Événement : organise >
 
 note "'vend' un Article donnant accès à une Zone d'un\nÉvénement implique 'organise' cet événement" as N2
 Asso .. N2
 Zone .. N2
 
-Asso "*" - "*" Événement : partenaire >
 Événement "1" *-- "n" Zone
 Article "*" - "*" Zone : donne accès à >
 
-PersonnePortail --|> Personne
+PersonnePortail -|> Personne
 
-Billet - Personne : bénéficie de <
+Billet "*" -- "1" Personne : bénéficie de <
 
 
-PersonnePortail "1" - "*" Achat : paye >
-Achat "1" - "n" Billet : finance >
+PersonnePortail "1" -- "*" Achat : paye >
+Achat "1" -- "n" Billet : finance >
+
+
+package "Droit d'accès aux articles" #DDDDDD {
+
+abstract DroitArticle
+abstract OperateurDroit
+OperateurDroit --|> DroitArticle
+OperateurDroit "0..1" -- "n" DroitArticle : opérande <
+ET -|> OperateurDroit
+OU -|> OperateurDroit
+Whitelist -|> DroitArticle
+AppartenanceAsso --|> DroitArticle
+AppartenanceAsso "*" -- "n" Asso
+Article "1" -- "0..1" DroitArticle : réservé à >
+
+}
 
 @enduml
