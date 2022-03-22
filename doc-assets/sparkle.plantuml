@@ -4,7 +4,7 @@ skinparam groupInheritance 2
 note " 'n' ∈ ℕ*\n '*' ∈ ℕ" as N1
 note "héritages exclusifs" as N3
 
-Article "1" - "*" Billet
+Article "1" - "*" Billet : donne droit à <
 
 Asso "1" - "*" Article : vend >
 Asso "1" - "*" Événement : organise >
@@ -15,7 +15,7 @@ Zone .. N2
 
 Asso "*" - "*" Événement : partenaire >
 Événement "1" *-- "n" Zone
-Article "*" - "*" Zone : donne accès >
+Article "*" - "*" Zone : donne accès à >
 
 PersonnePortail --|> Personne
 
