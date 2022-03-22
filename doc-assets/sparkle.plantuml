@@ -8,6 +8,7 @@ Article "1" -- "*" Billet : donne droit à <
 
 Asso "1" -- "*" Article : vend >
 Asso "1" -- "*" Événement : organise >
+Art_gratuit -|> Article
 
 note "'vend' un Article donnant accès à une Zone d'un\nÉvénement implique 'organise' cet événement" as N2
 Asso .. N2
@@ -16,12 +17,12 @@ Zone .. N2
 Événement "1" *-- "n" Zone
 Article "*" - "*" Zone : donne accès à >
 
-PersonnePortail -|> Personne
+Pers_portail -|> Personne
 
 Billet "*" -- "1" Personne : bénéficie de <
 
 
-PersonnePortail "1" -- "*" Achat : paye >
+Pers_portail "1" -- "*" Achat : paye >
 Achat "1" -- "n" Billet : finance >
 
 
