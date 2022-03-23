@@ -1,5 +1,4 @@
 @startuml
-!theme black-knight
 
 == Première connexion ==
 Alice -> Sparkle : connexion
