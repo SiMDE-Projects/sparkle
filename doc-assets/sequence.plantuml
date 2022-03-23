@@ -21,6 +21,28 @@ Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__
 
 == Se renseigner [et prendre la décision d'acheter] ==
 Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et\néventuellement prendre la décision d'acheter
-Sparkle -> Alice : //information:// nom vente, description, [lieu], [critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée et s'il existe des articles protégés par des droits d'accès:**\n//information:// se connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information:// nom article, prix, [critère donnant accès à l'article non public]
+Sparkle -> Alice : //information://\nnom vente, description, [lieu],\n[critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée**\n**et s'il existe des articles protégés par des droits d'accès:**\n//information:// se connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information:// nom article, prix,\n[critère donnant accès à l'article non public]
+Alice -> Sparkle : j'accepte les conditions de chaque article, je veux [(article, qté)]
+group début paiement
+Sparkle -> Alice : //information://\nAlice, si tu as un compte CAS UTC/ESCOM,\nstp appuie sur «j'ai un compte Payutc»\npour faciliter la tâche des gentils bénévoles.\nCapiche?
+end
+note right
+  Si article[s] payant[s]
+end note
+Alice -> Sparkle : ok capiche
+Sparkle -> Alice : //ordre:// redirection vers Payutc avec __token__
+Alice -> Payutc : paiement avec __token__
+Payutc -> Sparkle : ~~magic?~~
+Payutc -> Alice : redirection vers Sparkle ~~(avec token2 ?)~~
+Alice -> Sparkle : yo c'est bon j'ai payé ~~(avec token2 ?)~~
+Sparkle -> Alice : **si l'argent est sécurisé**\n//information://\ngénial j'aime l'argent.\nvoilà ta __place__ bisous\ntu pourras la retrouver en faisant telle action\n**si l'argent est pas encore arrivé**\n//information://\nj'ai pas encore eu l'argent,\nmais y'a moy pour que ça arrive plus tard.\ntu seras prévenue de telle façon en cas de réussite/échec\n**si l'argent arrivera pas**\n//information://\nouaaais alors payutc t'a rien dit\nmais au final payutc m'a dit personnellement\nque j'aurai pas ton argent du coup réessaye\n\n
+
+== L'argent arrive après coup ==
+Payutc -> Sparkle : c bon pour __la commande d'Alice__
+Sparkle -> Alice : //information://\nc'est bon j'ai reçu la thune\nvoilà ta __place__\ntu pourras la retrouver en faisant telle action
+
+== L'argent veut pas arriver ==
+Payutc -> Sparkle : j'y arrive pas pour __la commande d'Alice__ rip
+Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences,\n**retour à l'étape 'début paiement'**
 
 @enduml
