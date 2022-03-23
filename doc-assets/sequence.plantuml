@@ -1,0 +1,26 @@
+@startuml
+!theme black-knight
+
+== Première connexion ==
+Alice -> Sparkle : connexion
+Sparkle -> Alice : //information://\n3 choix: s'authentifier, rechercher vente, lister ventes\n//information://\ns'authentifier peut changer la visibilité de ventes
+
+== Authentification ==
+Alice -> Sparkle : je souhaite m'authentifier
+Sparkle -> Alice : //ordre:// redirection vers portail
+Alice -> Portail : je souhaite m'authentifier auprès de Sparkle
+Portail -> Alice : //ordre:// redirection vers Sparkle avec __token__
+Alice -> Sparkle : authentification avec __token__
+Sparkle -> Portail : validité __token__\ninfos sur Alice
+Portail -> Sparkle : //info.:// token ok,\nnom, e-mail,\nassos d'Alice
+Sparkle -> Alice : //information://\ntu es authentifiée\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes\n//information://\ns'authentifier peut avoir changé la visibilité de ventes
+
+== Rechercher/lister ventes ==
+Alice -> Sparkle : liste les ventes (récentes|dont le nom ressemble à __XX__)
+Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [visible car authentifiée]\n(vente terminée|vente accessible par action d'Alice)
+
+== Se renseigner [et prendre la décision d'acheter] ==
+Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et\néventuellement prendre la décision d'acheter
+Sparkle -> Alice : //information:// nom vente, description, [lieu], [critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée et s'il existe des articles protégés par des droits d'accès:**\n//information:// se connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information:// nom article, prix, [critère donnant accès à l'article non public]
+
+@enduml
