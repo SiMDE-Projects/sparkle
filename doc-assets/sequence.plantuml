@@ -1,8 +1,9 @@
 @startuml
+skinparam maxMessageSize 250
 
 == Première connexion ==
 Alice -> Sparkle : connexion
-Sparkle -> Alice : //information://\n3 choix: s'authentifier, rechercher vente, lister ventes\n//information://\ns'authentifier peut changer la visibilité de ventes
+Sparkle -> Alice : //information://\n3 choix: s'authentifier, rechercher vente, lister ventes\n\n//information://\ns'authentifier peut changer la visibilité de ventes
 
 == Authentification ==
 Alice -> Sparkle : je souhaite m'authentifier
@@ -10,38 +11,69 @@ Sparkle -> Alice : //ordre:// redirection vers portail
 Alice -> Portail : je souhaite m'authentifier auprès de Sparkle
 Portail -> Alice : //ordre:// redirection vers Sparkle avec __token__
 Alice -> Sparkle : authentification avec __token__
-Sparkle -> Portail : validité __token__\ninfos sur Alice
-Portail -> Sparkle : //info.:// token ok,\nnom, e-mail,\nassos d'Alice
-Sparkle -> Alice : //information://\ntu es authentifiée\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes\n//information://\ns'authentifier peut avoir changé la visibilité de ventes
+Sparkle -> Portail : validité __token__ infos sur Alice
+Portail -> Sparkle : //info.:// token ok, nom, e-mail, assos d'Alice
+Sparkle -> Alice : //information://\ntu es authentifiée\n\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes\n\n//information://\ns'authentifier peut avoir changé la visibilité de ventes
 
 == Rechercher/lister ventes ==
 Alice -> Sparkle : liste les ventes (récentes|dont le nom ressemble à __XX__)
-Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [visible car authentifiée]\n(vente terminée|vente accessible par action d'Alice)
+Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [visible car authentifiée] (vente terminée|vente accessible par action d'Alice)
 
 == Se renseigner [et prendre la décision d'acheter] ==
-Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et\néventuellement prendre la décision d'acheter
-Sparkle -> Alice : //information://\nnom vente, description, [lieu],\n[critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée**\n**et s'il existe des articles protégés par des droits d'accès:**\n//information:// se connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information:// nom article, prix,\n[critère donnant accès à l'article non public]
-Alice -> Sparkle : j'accepte les conditions de chaque article, je veux [(article, qté)]
+Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et éventuellement prendre la décision d'acheter
+Sparkle -> Alice : //information://\nnom vente, description, [lieu], [critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée**\n**et s'il existe des articles protégés par des droits d'accès:** //information://\nse connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information://\nnom article, prix, [critère donnant accès à l'article non public]
+Alice -> Sparkle : je veux [(article, qté)]
+Sparkle -> Sparkle : panier enregistré pour respect quota
+Sparkle -> Alice : //information://ok, c'est dans ton panier, ils sont temporairement réservés pour //DUREE_MAX_PANIER_INACTIVITE//
+
+== Modification du panier ==
+Alice -> Sparkle : en fait je ne veux plus de ça et je voudrais plutôt ça
+Sparkle -> Sparkle : panier enregistré pour respect quota
+Sparkle -> Alice : //information://ok, c'est dans ton panier, ils sont temporairement réservés //DUREE_MAX_PANIER_INACTIVITE//
+
+== Abandon ==
+Alice -> Sparkle : pas d'action depuis //DUREE_MAX_PANIER_INACTIVITE//
+Sparkle -> Alice : wsh
+
+== Acquisition gratuite ==
+Alice -> Sparkle : j'accepte les conditions de chaque article
+Sparkle -> Alice : ok, voici __tes places__, bisou
+
+== Acquisition payante ==
+Alice -> Sparkle : j'accepte les conditions de chaque article
 group début paiement
-Sparkle -> Alice : //information://\nAlice, si tu as un compte CAS UTC/ESCOM,\nstp appuie sur «j'ai un compte Payutc»\npour faciliter la tâche des gentils bénévoles.\nCapiche?
+Sparkle -> Alice : //information://\nAlice, si tu as un compte CAS UTC/ESCOM, stp appuie sur «j'ai un compte Payutc» pour faciliter la tâche des gentils bénévoles. Capiche?
 end
 note right
   Si article[s] payant[s]
 end note
 Alice -> Sparkle : ok capiche
-Sparkle -> Alice : //ordre:// redirection vers Payutc avec __token__
-Alice -> Payutc : paiement avec __token__
-Payutc -> Sparkle : ~~magic?~~
-Payutc -> Alice : redirection vers Sparkle ~~(avec token2 ?)~~
-Alice -> Sparkle : yo c'est bon j'ai payé ~~(avec token2 ?)~~
-Sparkle -> Alice : **si l'argent est sécurisé**\n//information://\ngénial j'aime l'argent.\nvoilà ta __place__ bisous\ntu pourras la retrouver en faisant telle action\n**si l'argent est pas encore arrivé**\n//information://\nj'ai pas encore eu l'argent,\nmais y'a moy pour que ça arrive plus tard.\ntu seras prévenue de telle façon en cas de réussite/échec\n**si l'argent arrivera pas**\n//information://\nouaaais alors payutc t'a rien dit\nmais au final payutc m'a dit personnellement\nque j'aurai pas ton argent du coup réessaye\n\n
+Sparkle -> Payutc : WEBSALE.createTransaction
+Sparkle -> Sparkle : enregistrement date/heure création
+Payutc -> Sparkle : __URL__ payutc
+Sparkle -> Alice : //ordre:// redirection vers __URL__
+note across: Processus de paiement
+Alice -> Sparkle : GET URL de retour Sparkle
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : Infos sur la transaction (**V**|**W**|**A**)
 
-== L'argent arrive après coup ==
-Payutc -> Sparkle : c bon pour __la commande d'Alice__
-Sparkle -> Alice : //information://\nc'est bon j'ai reçu la thune\nvoilà ta __place__\ntu pourras la retrouver en faisant telle action
+Sparkle -> Alice : **si la transaction est validée**\n//information://\ngénial j'aime l'argent. voilà tes __Billets__. Tu pourras les retrouver en faisant telle action. bisous\n**si la transaction est en cours**\n//information://\nj'ai pas encore eu l'argent, mais y'a moy pour que ça arrive plus tard. tu seras prévenue de telle façon en cas de réussite/échec\n**si la transaction est abandonnée**\n//information://\nouaaais alors payutc t'a rien dit mais au final payutc m'a dit personnellement que j'aurai pas ton argent du coup réessaye. **retour à l'étape 'début paiement'**
 
-== L'argent veut pas arriver ==
+== La transaction est validée plus tard ==
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **V**alidated
+Sparkle -> Alice : //information://\nc'est bon j'ai reçu la thune voilà tes __Billets__. Tu pourras les retrouver en faisant telle action. bisous
+
+== La transaction est abandonnée côté Payutc ==
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **A**bandonned
 Payutc -> Sparkle : j'y arrive pas pour __la commande d'Alice__ rip
-Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences,\n**retour à l'étape 'début paiement'**
+Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences, **retour à l'étape 'début paiement'**
 
+== La transaction reste bloquée longtemps ==
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **W**aiting
+Sparkle -> Sparkle : comparaison heure de création
+Sparkle -> AdminDePayutc : wsh bien ou bien? __identifiant de transaction__
+Sparkle -> Alice : //information://\nc bloké mais de vrais humains s'en occupent tkt
 @enduml
