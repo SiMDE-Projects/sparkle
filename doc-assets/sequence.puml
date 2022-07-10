@@ -1,0 +1,91 @@
+@startuml
+skinparam maxMessageSize 250
+
+== Première connexion ==
+Alice -> Sparkle : connexion
+Sparkle -> Alice : //information://\ntu vas être redirigée vers le portail des assos pour t'authentifier.
+Sparkle -> Alice : redirection vers portail
+Alice -> Portail : je souhaite m'authentifier auprès de Sparkle
+Portail -> Alice : redirection vers Sparkle avec __token__
+Alice -> Sparkle : authentification avec __token__
+Sparkle -> Portail : validité __token__ et infos sur Alice
+Portail -> Sparkle : //info.:// token ok, nom, e-mail, majorité, assos d'Alice
+Sparkle -> Alice : //information://\ntu es authentifiée\n\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes
+
+== Rechercher/lister ventes ==
+Alice -> Sparkle : liste les ventes (récentes|dont le nom ressemble à __XX__)
+Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [explication de la permission d'accès à la vente] (vente terminée|vente accessible par action d'Alice)
+
+== Se renseigner [et prendre la décision d'acheter] ==
+Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et éventuellement prendre la décision d'acheter
+Sparkle -> Alice : //information://\nnom vente, description, [lieu]\n**pour chaque article permis à Alice:**\n//information://\nnom article, prix, [explication de la permission d'accès à la vente]
+Alice -> Sparkle : je veux [(article, personneBeneficiaire)]
+Sparkle -> Sparkle : panier enregistré, stock mis à jour
+Sparkle -> Alice : //information://\nok, c'est dans ton panier, ils sont temporairement réservés pour //DUREE_MAX_PANIER_INACTIVITE//
+
+== Modification du panier ==
+Alice -> Sparkle : en fait je ne veux plus de ça et je voudrais plutôt ça
+Sparkle -> Sparkle : panier enregistré, stock mis à jour
+Sparkle -> Alice : //information://\nok, c'est dans ton panier, ils sont temporairement réservés pour //DUREE_MAX_PANIER_INACTIVITE//
+
+== Abandon ==
+Sparkle -> Sparkle : pas d'action d'Alice depuis //DELAI_NOTIF_PANIER_INACTIVITE//
+Sparkle -> Alice : wsh
+Sparkle -> Sparkle : pas d'action d'Alice depuis //DUREE_MAX_PANIER_INACTIVITE//
+Sparkle -> Alice : bon bah j'ai vidé ton panier
+Sparkle -> Sparkle : panier vidé, stock mis à jour
+== Acquisition gratuite ==
+Alice -> Sparkle : j'accepte les conditions de chaque article
+Sparkle -> Alice : ok, voici __tes places__, bisou
+
+== Acquisition payante ==
+Alice -> Sparkle : j'accepte les conditions de chaque article
+group début paiement
+Sparkle -> Alice : **si Alice est une Pers_Portail:**\n//information://\n stp appuie sur «j'ai un compte Payutc» pour faciliter la tâche des gentils bénévoles. Capiche?
+Alice -> Sparkle : ok capiche
+end
+Sparkle -> Payutc : WEBSALE.createTransaction
+Sparkle -> Sparkle : enregistrement date/heure création
+Payutc -> Sparkle : __URL__ payutc
+Sparkle -> Alice : redirection vers __URL__
+note over Alice, Payutc: Processus de paiement
+Alice -> Sparkle : GET URL de retour Sparkle
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : Infos sur la transaction (**V**|**W**|**A**)
+
+Sparkle -> Alice : **si la transaction est validée**\n//information://\ngénial j'aime l'argent. voilà tes __Billets__. Tu pourras les retrouver en faisant telle action. bisous\n**si la transaction est en cours**\n//information://\nj'ai pas encore eu l'argent, mais y'a moy pour que ça arrive plus tard. tu seras prévenue de telle façon en cas de réussite/échec\n**si la transaction est abandonnée**\n//information://\nouaaais alors payutc t'a rien dit mais au final payutc m'a dit personnellement que j'aurai pas ton argent du coup réessaye. **retour à l'étape 'début paiement'**
+
+== La transaction est validée plus tard ==
+Sparkle -> Sparkle : C'est l'heure de vérifier si une transaction **W** ou **R** a changé d'état
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **V**alidated
+Sparkle -> Alice : //information://\nc'est bon j'ai reçu la thune voilà tes __Billets__. Tu pourras les retrouver en faisant telle action. bisous
+
+== La transaction est abandonnée côté Payutc ==
+Sparkle -> Sparkle : C'est l'heure de vérifier si une transaction **W** ou **R** a changé d'état
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **A**bandonned
+Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences, **retour à l'étape 'début paiement'**
+
+== La transaction reste bloquée longtemps ==
+Sparkle -> Sparkle : C'est l'heure de vérifier si une transaction **W** ou **R** a changé d'état
+Sparkle -> Payutc : WEBSALE.getTransactionInfo
+Payutc -> Sparkle : **W**aiting
+Sparkle -> Sparkle : comparaison heure de création
+Sparkle -> AdminDePayutc : wsh bien ou bien? __identifiant de transaction__
+Sparkle -> Alice : //information://\nc bloké mais de vrais humains s'en occupent tkt. Mais sois gentille avec eux stp
+AdminDePayutc -> Alice : ouais ouais jconfirme, on veut de la gentillesse stp
+
+== Annulation manuelle d'une transaction ==
+AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **P**aused
+Sparkle -> AdminDePayutc : //information://\nje ne vais plus requêter Payutc à propos de cette transaction, et je n'enverrai aucun feedback à Alice
+note over AdminDePayutc, Sparkle: Investigation par les admins de Payutc, la transaction doit être abandonnée
+AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **M**anuallyAbandoned
+Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences, **retour à l'étape 'début paiement'**
+
+== Relancement d'une transaction après une investigation ==
+AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **P**aused
+Sparkle -> AdminDePayutc : //information://\nje ne vais plus requêter Payutc à propos de cette transaction, et je n'enverrai aucun feedback à Alice
+note over Sparkle, AdminDePayutc : Investigation par les admins de Payutc, il est à nouveau possible pour Sparkle de requêter la transaction.\n(S'il était déjà possible de requêter la transaction, il y a probablement un problème côté Sparkle)
+AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **R**estartedManually, mise à jour de l'heure de création
+@enduml

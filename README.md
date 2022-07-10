@@ -33,14 +33,14 @@ $ docker compose run --rm web python manage.py createsuperuser --username sparkl
 
 ## Urls
 
-One the project is initialized, you can go to theses urls to work:
+Once the project is initialized, you can go to theses urls to work:
 
 - `http://localhost:8000` for the api
 - `http://localhost:8080` for adminer if docker is started with debug profile
 
 ## Code style check commands
 
-Pull requests not complying with code repository's format and style rules would be marked as stall until it's fixed.
+Pull requests not complying with code repository's format and style rules would be marked as stall until fixed.
 
 You can execute `black` and `flake8` with the 2 following commands to automatically lint/fix your code.
 If you add/remove/update an API route, you can regenerate the OpenAPI documentation file with the third command.

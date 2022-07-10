@@ -1,0 +1,53 @@
+@startuml sparkle
+skinparam groupInheritance 2
+
+note " 'n' ∈ ℕ*\n '*' ∈ ℕ" as N1
+note "attributs non facultatifs" as N2
+note "héritages exclusifs" as N3
+
+Article "1" -- "*" Vente
+
+Asso "1" -- "*" Article : vend >
+
+Pers_portail -|> Personne
+
+class Personne {
+	{opt} email email
+}
+
+Réservation "stock" -- "1" Article
+Réservation "*" -- "1" Personne : bénéficiaire <
+Réservation "*" -- "1" Vente
+
+Vente : ÉtatVente état
+
+enum ÉtatVente {
+	DANS_PANIER
+	CGV_ACCEPTÉES
+	PAYÉ
+}
+
+Pers_portail "1" -- "*" Vente : client >
+
+Article : int prix
+Article : bool gratuit
+Article : int stock
+Article : string conditionsVente
+
+package "Description des permissions d'accès à la vente des articles" #DDDDDD {
+
+abstract PermissionArticle
+abstract Operateur
+Operateur --|> PermissionArticle
+Operateur "0..1" -- "n" PermissionArticle : opérande <
+ET -|> Operateur
+OU -|> Operateur
+Whitelist -|> PermissionArticle
+Whitelist "*" -- "*" Personne
+AppartenanceAsso --|> PermissionArticle
+AppartenanceAsso "*" -- "n" Asso
+Article "1" -- "0..1" PermissionArticle : protégé >
+
+}
+
+@enduml
