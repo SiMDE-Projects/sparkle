@@ -3,26 +3,23 @@ skinparam maxMessageSize 250
 
 == Première connexion ==
 Alice -> Sparkle : connexion
-Sparkle -> Alice : //information://\n3 choix: s'authentifier, rechercher vente, lister ventes\n\n//information://\ns'authentifier peut changer la visibilité de ventes
-
-== Authentification ==
-Alice -> Sparkle : je souhaite m'authentifier
+Sparkle -> Alice : //information://\ntu vas être redirigée vers le portail des assos pour t'authentifier.
 Sparkle -> Alice : redirection vers portail
 Alice -> Portail : je souhaite m'authentifier auprès de Sparkle
 Portail -> Alice : redirection vers Sparkle avec __token__
 Alice -> Sparkle : authentification avec __token__
-Sparkle -> Portail : validité __token__ infos sur Alice
-Portail -> Sparkle : //info.:// token ok, nom, e-mail, assos d'Alice
-Sparkle -> Alice : //information://\ntu es authentifiée\n\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes\n\n//information://\ns'authentifier peut avoir changé la visibilité de ventes
+Sparkle -> Portail : validité __token__ et infos sur Alice
+Portail -> Sparkle : //info.:// token ok, nom, e-mail, majorité, assos d'Alice
+Sparkle -> Alice : //information://\ntu es authentifiée\n\n//information://\n3 choix: se déconnecter, rechercher vente, lister ventes
 
 == Rechercher/lister ventes ==
 Alice -> Sparkle : liste les ventes (récentes|dont le nom ressemble à __XX__)
-Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [visible car authentifiée] (vente terminée|vente accessible par action d'Alice)
+Sparkle -> Alice : **pour chaque vente (récente|dont le nom ressemble à __XX__):**\n//information://\nnom, description, prix, [prix...], [lieu], [explication de la permission d'accès à la vente] (vente terminée|vente accessible par action d'Alice)
 
 == Se renseigner [et prendre la décision d'acheter] ==
 Alice -> Sparkle : je veux me renseigner sur la vente __xxxx__ et éventuellement prendre la décision d'acheter
-Sparkle -> Alice : //information://\nnom vente, description, [lieu], [critère ayant donné droit d'accès à la vente]\n**si Alice n'est pas authentifiée**\n**et s'il existe des articles protégés par des droits d'accès:** //information://\nse connecter peut changer la visibilité d'articles\n**pour chaque article accessible:**\n//information://\nnom article, prix, [critère donnant accès à l'article non public]
-Alice -> Sparkle : je veux [(article, qté)]
+Sparkle -> Alice : //information://\nnom vente, description, [lieu]\n**pour chaque article permis à Alice:**\n//information://\nnom article, prix, [explication de la permission d'accès à la vente]
+Alice -> Sparkle : je veux [(article, personneBeneficiaire)]
 Sparkle -> Sparkle : panier enregistré, stock mis à jour
 Sparkle -> Alice : //information://\nok, c'est dans ton panier, ils sont temporairement réservés pour //DUREE_MAX_PANIER_INACTIVITE//
 
@@ -44,17 +41,14 @@ Sparkle -> Alice : ok, voici __tes places__, bisou
 == Acquisition payante ==
 Alice -> Sparkle : j'accepte les conditions de chaque article
 group début paiement
-Sparkle -> Alice : //information://\nAlice, si tu as un compte CAS UTC/ESCOM, stp appuie sur «j'ai un compte Payutc» pour faciliter la tâche des gentils bénévoles. Capiche?
-end
-note right
-  Si article[s] payant[s]
-end note
+Sparkle -> Alice : **si Alice est une Pers_Portail:**\n//information://\n stp appuie sur «j'ai un compte Payutc» pour faciliter la tâche des gentils bénévoles. Capiche?
 Alice -> Sparkle : ok capiche
+end
 Sparkle -> Payutc : WEBSALE.createTransaction
 Sparkle -> Sparkle : enregistrement date/heure création
 Payutc -> Sparkle : __URL__ payutc
 Sparkle -> Alice : redirection vers __URL__
-note across: Processus de paiement
+note over Alice, Payutc: Processus de paiement
 Alice -> Sparkle : GET URL de retour Sparkle
 Sparkle -> Payutc : WEBSALE.getTransactionInfo
 Payutc -> Sparkle : Infos sur la transaction (**V**|**W**|**A**)
@@ -85,13 +79,13 @@ AdminDePayutc -> Alice : ouais ouais jconfirme, on veut de la gentillesse stp
 == Annulation manuelle d'une transaction ==
 AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **P**aused
 Sparkle -> AdminDePayutc : //information://\nje ne vais plus requêter Payutc à propos de cette transaction, et je n'enverrai aucun feedback à Alice
-note across: Investigation par les admins de Payutc, la transaction doit être abandonnée
+note over AdminDePayutc, Sparkle: Investigation par les admins de Payutc, la transaction doit être abandonnée
 AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **M**anuallyAbandoned
 Sparkle -> Alice : //information://\npayutc y arrive pas rip j'ai besoin que tu recommences, **retour à l'étape 'début paiement'**
 
 == Relancement d'une transaction après une investigation ==
 AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **P**aused
 Sparkle -> AdminDePayutc : //information://\nje ne vais plus requêter Payutc à propos de cette transaction, et je n'enverrai aucun feedback à Alice
-note across: Investigation par les admins de Payutc, il est à nouveau possible pour Sparkle de requêter la transaction.\n(S'il était déjà possible de requêter la transaction, il y a probablement un problème côté Sparkle)
+note over Sparkle, AdminDePayutc : Investigation par les admins de Payutc, il est à nouveau possible pour Sparkle de requêter la transaction.\n(S'il était déjà possible de requêter la transaction, il y a probablement un problème côté Sparkle)
 AdminDePayutc -> Sparkle : Passage d'une __transaction__ en **R**estartedManually, mise à jour de l'heure de création
 @enduml
