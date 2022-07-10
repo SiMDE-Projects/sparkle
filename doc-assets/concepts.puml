@@ -2,47 +2,51 @@
 skinparam groupInheritance 2
 
 note " 'n' ∈ ℕ*\n '*' ∈ ℕ" as N1
+note "attributs non facultatifs" as N2
 note "héritages exclusifs" as N3
 
-Article "1" -- "*" Billet : donne droit à <
+Article "1" -- "*" Vente
 
 Asso "1" -- "*" Article : vend >
-Asso "1" -- "*" Événement : organise >
-
-note "'vend' un Article donnant accès à une Zone d'un\nÉvénement implique 'organise' cet événement" as N2
-Asso .. N2
-Zone .. N2
-
-Événement "1" *-- "n" Zone
-Article "*" - "*" Zone : donne accès à >
 
 Pers_portail -|> Personne
 
-Billet "*" -- "1" Personne : bénéficie de <
+class Personne {
+	{opt} email email
+}
 
+Réservation "stock" -- "1" Article
+Réservation "*" -- "1" Personne : bénéficiaire <
+Réservation "*" -- "1" Vente
 
-Pers_portail "1" -- "*" ContratVente
-ContratVente "1" -- "n" Billet : cédé sous <
-note "Le contrat de vente consiste en l'acceptation\ndes conditions de vente de chaque article,\nainsi que d'un engagement financier\nsi l'un des articles a un prix non nul" as N4
-N4 .. ContratVente
-N4 .. Article::prix
+Vente : ÉtatVente état
 
+enum ÉtatVente {
+	DANS_PANIER
+	CGV_ACCEPTÉES
+	PAYÉ
+}
 
-Article : prix
-Article : conditionsVente
+Pers_portail "1" -- "*" Vente : client >
 
-package "Droit d'accès aux articles" #DDDDDD {
+Article : int prix
+Article : bool gratuit
+Article : int stock
+Article : string conditionsVente
 
-abstract DroitArticle
-abstract OperateurDroit
-OperateurDroit --|> DroitArticle
-OperateurDroit "0..1" -- "n" DroitArticle : opérande <
-ET -|> OperateurDroit
-OU -|> OperateurDroit
-Whitelist -|> DroitArticle
-AppartenanceAsso --|> DroitArticle
+package "Description des permissions d'accès à la vente des articles" #DDDDDD {
+
+abstract PermissionArticle
+abstract Operateur
+Operateur --|> PermissionArticle
+Operateur "0..1" -- "n" PermissionArticle : opérande <
+ET -|> Operateur
+OU -|> Operateur
+Whitelist -|> PermissionArticle
+Whitelist "*" -- "*" Personne
+AppartenanceAsso --|> PermissionArticle
 AppartenanceAsso "*" -- "n" Asso
-Article "1" -- "0..1" DroitArticle : réservé à >
+Article "1" -- "0..1" PermissionArticle : protégé >
 
 }
 
